@@ -1,232 +1,463 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <!-- Add Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <!-- CSS file -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.11.2/datatables.min.css"/>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>APS - Admin Login</title>
-  </head>
-  <body>
+  <title>APS - Admin Login</title>
 
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        
-        <div id="loginScreen" class="col-md-6">
-          <image class="img-fluid mb-4" src="Logo.png">
+  <!-- Add Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
 
-          <div class="card">
-            <div class="card-header">
-              <h4>Login</h4>
-            </div>
-            <div class="card-body">
-              <form id="#login-form">
-                <div class="form-group">
-                  <label for="email">Email</label>
-                  <input type="email" class="form-control" id="email" required>
-                </div>
-                <div class="form-group">
-                  <label for="password">Password</label>
-                  <input type="password" class="form-control" id="password" required>
-                </div>
-                <button id="submit" type="submit" class="btn btn-primary btn-block">Login</button>
-              </form>
-            </div>
+  <!-- CSS file -->
+  <link href="https://cdn.datatables.net/v/bs5/dt-1.13.4/datatables.min.css" rel="stylesheet"/>
+
+  <style>
+
+  </style>
+
+</head>
+<body class="bg-light">
+
+  <div class="d-flex justify-content-center align-items-center" style="height: 100vh;" id="loadingIcon">
+    <div class="spinner-border" role="status">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+
+      <div id="loginScreen" class="col-md-4 d-none">
+        <image class="img-fluid mb-4 px-5" src="logo.png"/>
+
+        <div class="card shadow">
+
+          <div class="card-header px-4 py-3">
+            Welcome to APS Admin Login
+          </div>
+
+          <div class="card-body p-4">
+            <form id="#login-form">
+
+              <div class="mb-3">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" class="form-control" id="email" required placeholder="Email">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" class="form-control" id="password" required placeholder="Password">
+              </div>
+              <button id="loginBtn" type="submit" class="btn text-white btn-info btn-block w-100">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div id="tableUser" class="d-none container">
+        <h1 class="title">Users</h1>
+        <hr>
+        <button id="logoutBtn" class="btn btn-info text-white mb-4" type="button">Logout</button>
+        <div class="card shadow">
+          <div class="card-body table-responsive">
+            <table id="userTable" class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Add more rows as needed -->
+              </tbody>
+            </table> 
           </div>
         </div>
 
-        <div id="tableUser" class="d-none container">
-          <h1 class="title">Users</h1>
-          <hr>
-          <button id="logout" class="btn btn-primary mb-4" type="button">Logout</button>
+      </div>
 
-          <table id="userTable" class="table table-striped table-bordered">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Add more rows as needed -->
-            </tbody>
-          </table>  
-        </div>
-
-        <div id="tableVehicle" class="d-none container">
-          <h1 class="title">Vehicles</h1>
-          <hr>
-          <button id="vehicleBack" class="btn btn-primary mb-4" type="button">Back</button>
-          
-          <table id="vehicleTable" class="table table-striped table-bordered">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Plate No.</th>
-                <th>RFID</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Add more rows as needed -->
-            </tbody>
-          </table>  
-        </div>
+      <div id="tableVehicle" class="d-none container">
+        <h1 class="title">Vehicles</h1>
+        <hr>
+        <button id="vehicleBack" class="btn btn-info text-white mb-4" type="button">Back</button>
+        <div class="card shadow">
+          <div class="card-body table-responsive">
+            <table id="vehicleTable" class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Plate No.</th>
+                  <th>RFID</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Add more rows as needed -->
+              </tbody>
+            </table>   
+          </div>
+        </div> 
       </div>
     </div>
+  </div>
 
-    
+  <!-- Add Bootstrap JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js" integrity="sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.min.js" integrity="sha384-Y4oOpwW3duJdCWv5ly8SCFYWqFDsfob/3GkgExXKV4idmbt98QcxXYs9UoXAB7BZ" crossorigin="anonymous"></script>
 
+  <!-- JavaScript files -->
+  <script src="https://cdn.datatables.net/v/bs5/dt-1.13.4/datatables.min.js"></script>
 
-    <!-- Add Bootstrap JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <!-- JavaScript files -->
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.11.2/datatables.min.js"></script>
-
-    <script type="module">
+  <script type="module">
       // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
-      import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
-      import { getDatabase, ref, onValue, set, remove  } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged  } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, remove, get  } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
 
       // TODO: Add SDKs for Firebase products that you want to use
       // https://firebase.google.com/docs/web/setup#available-libraries
 
       // Your web app's Firebase configuration
       // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-      const firebaseConfig = {
-        apiKey: "AIzaSyAE0eat83Cl4HPvmqZ-ADqJqiLMfMVaIYo",
-        authDomain: "apstest-2c116.firebaseapp.com",
-        databaseURL: "https://apstest-2c116-default-rtdb.firebaseio.com",
-        projectId: "apstest-2c116",
-        storageBucket: "apstest-2c116.appspot.com",
-        messagingSenderId: "596540615842",
-        appId: "1:596540615842:web:eaa0980be7a8484c317bfb",
-        measurementId: "G-EF0G8FQ10Q"
-      };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAE0eat83Cl4HPvmqZ-ADqJqiLMfMVaIYo",
+      authDomain: "apstest-2c116.firebaseapp.com",
+      databaseURL: "https://apstest-2c116-default-rtdb.firebaseio.com",
+      projectId: "apstest-2c116",
+      storageBucket: "apstest-2c116.appspot.com",
+      messagingSenderId: "596540615842",
+      appId: "1:596540615842:web:eaa0980be7a8484c317bfb",
+      measurementId: "G-EF0G8FQ10Q"
+    };
 
       // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const auth = getAuth();
-      const database = getDatabase();
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+    const database = getDatabase();
 
-      $(document).ready(function() {
-          $('#submit').click(function(event) {
-            event.preventDefault();
-            
-            const email = $('#email').val();
-            const password = $('#password').val();
-            signInWithEmailAndPassword(auth, email, password)
-              .then((userCredential) => {
-                // Signed in
-                const user = userCredential.user;
-                console.log(user);
+    function handleLogin() {
+      $('#loginBtn').click(function(event) {
+        event.preventDefault();
 
+        const email = $('#email').val();
+        const password = $('#password').val();
+
+           // Disable the login button and add the loading spinner
+        $('#loginBtn').prop('disabled', true);
+        $('#loginBtn').html('<i class="fa fa-spinner fa-spin"></i> Logging in...');
 
 
-                const users = ref(database, 'users/');
-                onValue(users, (snapshot) => {
+        signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
 
-                  // Hide Login Screen
-                  $('#loginScreen').addClass('d-none');
-                  
-                  // Populate User Table
-                  const userDataTable = $('#userTable').DataTable();
-                  userDataTable.clear(); // clear the table before adding new rows
-                  snapshot.forEach(function(childSnapshot) {
-                    const childData = childSnapshot.val();
-                    console.log(childData);
+          successfulLogin(userCredential);
 
-                    userDataTable.row.add([childData.name.replaceAll('"', ''), childData.email.replaceAll('"', ''), childData.number.replaceAll('"', ''), '<button class="btn btn-primary" data-id="'+ childData.id.replaceAll('"', '') +'">View Vehicles</button>']);
+        }).catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.log(errorCode, errorMessage);
+          if (errorCode === 'auth/invalid-email') {
+            alert('Invalid Email Address!');
+          } else if (errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
+            alert('Invalid Credentials!');
+          }
 
-                  });
-                  userDataTable.draw(); // redraw the table with the updated rows
-                  $('#tableUser').removeClass('d-none');
+        }).finally(() => {
+          // Re-enable the login button and restore its original text
+          $('#loginBtn').prop('disabled', false);
+          $('#loginBtn').html('Login');
+        });
 
-
-                  // Click Logout
-                  $('#logout').click(function() {
-                    $('#tableUser').addClass('d-none');
-                    $('#loginScreen').removeClass('d-none');
-                  });
-
-                  // Click View Vehicles
-                  $('#userTable tbody').on('click', 'button', function() {
-                    var userID = $(this).data('id');
-                    
-                    const vehicles = ref(database, 'vehicles2/'+userID);
-                    onValue(vehicles, (snapshot) => {
-                      // Hide UserTable
-                      $('#tableUser').addClass('d-none');
-                      
-                      // Populate Vehicle Table
-                      const vehicleDataTable = $('#vehicleTable').DataTable();
-                      vehicleDataTable.clear(); // clear the table before adding new rows
-                      var vehicleChildData;
-                      snapshot.forEach(function(childSnapshot) {
-                        vehicleChildData = childSnapshot.val();
-                        const childData = vehicleChildData;
-                        console.log(childData);
-
-                        vehicleDataTable.row.add([childData.type.replaceAll('"', ''), childData.plateNo.replaceAll('"', ''), '<div class="form-group"><input id="rfid" type="text" class="form-control" value="'+childData.rfid.replaceAll('"', '')+'"><button class="btn btn-success" data-id="'+ childData.id.replaceAll('"', '') +'">Save RFID</button></div>']);
-
-                      });
-                      vehicleDataTable.draw(); // redraw the table with the updated rows
-                      $('#tableVehicle').removeClass('d-none');
-
-
-                      // Click Save RFID
-                      $('#vehicleTable tbody').on('click', 'button', function() {
-                        var vehicleID = $(this).data('id');
-
-                        var rfid = $(this).siblings('#rfid').val();
-                        
-                        remove(ref(database, 'vehicles/' + vehicleChildData.rfid.replaceAll('"', '')));
-
-                        set(ref(database, 'vehicles2/' + userID + '/' + vehicleID), {
-                          id: vehicleID,
-                          rfid: rfid,
-                          plateNo: vehicleChildData.plateNo.replaceAll('"', ''),
-                          type: vehicleChildData.type.replaceAll('"', '')
-                        });
-
-                        set(ref(database, 'vehicles/' + rfid), {
-                          rfid: rfid,
-                          id: vehicleID
-                        });
-                      });
-
-                      // Click Vehicle Back
-                      $('#vehicleBack').click(function() {
-                        $('#tableVehicle').addClass('d-none');
-                        $('#tableUser').removeClass('d-none');
-                      });
-                    }); 
-                    
-                  });
-                });
-
-
-              })
-              .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                console.log(errorCode, errorMessage);
-              });
-              
-          });
       });
-    </script>
-  </body>
+    }
+
+    function successfulLogin(userCredential) {
+        // Signed in
+      const user = userCredential.user;
+
+      if (user.email == 'admin@admin.com' || user.email == 'apssystem2023@gmail.com') {
+        goTo('index.html?page=dashboard');
+      } else{
+        alert('Invalid Credentials!');
+        logout();
+      }
+    }
+
+    function getUsers() {
+
+      $('#loginScreen').addClass('d-none');
+
+      const users = ref(database, 'APS/users/');
+      onValue(users, (usersSnapshot) => {
+
+        showUserScreen(usersSnapshot);
+
+        showLoading(false);
+
+      });
+
+      // Click View Vehicles
+      $('#userTable tbody').on('click', 'button', function() {
+        var userID = $(this).data('id');
+
+        goTo('index.html?page=vehicles&id=' + userID);
+
+      });
+    }
+
+    function showUserScreen(usersSnapshot) {
+      // Hide Login Screen
+      $('#loginScreen').addClass('d-none');
+      
+      // Populate User Table
+      const userDataTable = $('#userTable').DataTable();
+      userDataTable.clear(); // clear the table before adding new rows
+
+      usersSnapshot.forEach(function(u) {
+        const user = JSON.parse(u.val());
+
+        userDataTable.row.add([user.name, user.email, user.number, '<button class="btn btn-sm btn-info text-white" data-id="'+ user.id +'"><span><i class="fa fa-car"></i><?span> View</button>']);
+
+      });
+      userDataTable.draw(); // redraw the table with the updated rows
+      
+      $('#tableUser').removeClass('d-none');
+      
+    }
+
+    function getVehicle(userID) {
+      const vehicles = ref(database, 'APS/vehicles2/'+userID);
+      onValue(vehicles, (vehiclesSnapshot) => {
+
+        showVehicleScreen(vehiclesSnapshot);
+
+        showLoading(false);
+
+      }); 
+
+      // Add event listeners for edit and clear buttons
+      $('#vehicleTable').on('click', '.edit-button', function() {
+        const vehicleID = $(this).data('id');
+        const vehiclePlate = $(this).data('plate');
+        const vehicleType = $(this).data('type');
+        const index = $(this).data('index');
+        const old = $(this).data('old');
+        const row = $(this).closest('tr');
+
+        const rfid = row.find('#rfid' + index).val();
+
+        const rfid1 = index !== '1' ? row.find('#rfid1').val() : '';
+        const rfid2 = index !== '2' ? row.find('#rfid2').val() : '';
+        const rfid3 = index !== '3' ? row.find('#rfid3').val() : '';
+        const rfid4 = index !== '4' ? row.find('#rfid4').val() : '';
+
+        if (old != '') {
+          remove(ref(database, 'APS/vehicles/' + old));
+        }
+
+
+
+        addVehicle(userID, vehicleID, vehiclePlate, vehicleType, rfid, rfid1, rfid2, rfid3, rfid4);
+      });
+
+      // Click Vehicle Back
+      $('#vehicleBack').click(function() {
+        goTo('index.html?page=dashboard');
+      });
+    }
+
+    async function addVehicle(userID, vehicleID, vehiclePlate, vehicleType, rfid, rfid1, rfid2, rfid3, rfid4) {
+      const rfidExists = await checkRFIDExists(rfid); // Check if the RFID already exists
+
+      if (rfidExists) {
+        alert('RFID already exists!');
+        return;
+      }
+      await remove(ref(database, 'APS/vehicles2/' + userID + '/' + vehicleID)); 
+
+      await set(ref(database, 'APS/vehicles2/' + userID + '/' + vehicleID), JSON.stringify({
+        id: vehicleID,
+        rfid1 : rfid1,
+        rfid2 : rfid2,
+        rfid3 : rfid3,
+        rfid4 : rfid4,
+        plateNo: vehiclePlate,
+        type: vehicleType
+      }));
+
+      if (rfid != '') {
+        await set(ref(database, 'APS/vehicles/' + rfid), {
+          rfid: rfid,
+          id: vehicleID
+        });
+      }
+
+      alert('RFID Successfully updated!')
+    }
+
+    async function checkRFIDExists(rfid) {
+      try {
+        if (rfid != '') {
+          const rfidSnapshot = await get(ref(database, 'APS/vehicles/' + rfid));
+          return rfidSnapshot.exists(); // Check if the snapshot exists
+        } else {
+          return false;
+        }
+      } catch (error) {
+        console.error(error);
+        return false;
+      }
+    }
+
+    function showVehicleScreen(vehiclesSnapshot) {
+      // Hide UserTable
+      $('#tableUser').addClass('d-none');
+
+      // Populate Vehicle Table
+      const vehicleDataTable = $('#vehicleTable').DataTable();
+      vehicleDataTable.clear(); // clear the table before adding new rows
+
+      vehiclesSnapshot.forEach(function(v) {
+        const vehicle = JSON.parse(v.val());
+
+        const editButtons = `
+        <div class="mb-3">
+        <div class="row"><div class="col-sm">
+        <input id="rfid1" type="text" class="form-control" value="`+vehicle.rfid1+`" placeHolder="RFID 1">
+        </div><div class="col-sm-auto">
+        <button class="btn btn-info text-white btn-sm edit-button" data-id="`+ vehicle.id +`" data-old="`+ vehicle.rfid1 +`" data-plate="`+ vehicle.plateNo +`" data-type="`+ vehicle.type +`" data-index="1">Save</button>
+        </div></div>
+        </div>
+        <div class="mb-3">
+        <div class="row"><div class="col-sm">
+        <input id="rfid2" type="text" class="form-control" value="`+vehicle.rfid2+`" placeHolder="RFID 2">
+        </div><div class="col-sm-auto">
+        <button class="btn btn-info text-white btn-sm edit-button" data-id="`+ vehicle.id +`" data-old="`+ vehicle.rfid2 +`" data-plate="`+ vehicle.plateNo +`" data-type="`+ vehicle.type +`" data-index="2">Save</button>
+        </div></div>
+        </div>
+        <div class="mb-3">
+        <div class="row"><div class="col-sm">
+        <input id="rfid3" type="text" class="form-control" value="`+vehicle.rfid3+`" placeHolder="RFID 3">
+        </div><div class="col-sm-auto">
+        <button class="btn btn-info text-white btn-sm edit-button" data-id="`+ vehicle.id +`" data-old="`+ vehicle.rfid3 +`" data-plate="`+ vehicle.plateNo +`" data-type="`+ vehicle.type +`" data-index="3">Save</button>
+        </div></div>
+        </div>
+        <div class="mb-3">
+        <div class="row"><div class="col-sm">
+        <input id="rfid4" type="text" class="form-control" value="`+vehicle.rfid4+`" placeHolder="RFID 4">
+        </div><div class="col-sm-auto">
+        <button class="btn btn-info text-white btn-sm edit-button" data-id="`+ vehicle.id +`" data-old="`+ vehicle.rfid4 +`" data-plate="`+ vehicle.plateNo +`" data-type="`+ vehicle.type +`" data-index="4">Save</button>
+        </div></div>
+        </div>
+        `;
+        const row = [
+          vehicle.type,
+          vehicle.plateNo,
+          editButtons
+          ];
+
+        const vehicleRow = vehicleDataTable.row.add(row);
+        $(vehicleRow.node()).attr('data-vehicle-id', vehicle.id); // Set data-vehicle-id attribute for the row
+
+
+      });
+
+      vehicleDataTable.draw(); // redraw the table with the updated rows
+      $('#tableVehicle').removeClass('d-none');
+    }
+
+    async function handleRoute() {
+      // Parse the query string and get the value of the "page" parameter
+      const searchParams = new URLSearchParams(window.location.search);
+      const page = searchParams.get('page');
+      const id = searchParams.get('id');
+
+      // Check if the "page" parameter is set to "home"
+      if (page === 'dashboard') {
+
+        const loggedIn = await checkIfLoggedIn();
+        if (loggedIn) {
+          getUsers();
+        } else {
+          goTo('index.html');
+        }
+      } else if (page === 'vehicles' && id != null) {
+        const loggedIn = await checkIfLoggedIn();
+        if (loggedIn) {
+          getVehicle(id);
+        } else {
+          goTo('index.html');
+        }
+      }
+
+      if (page == null) {
+        $('#loginScreen').removeClass('d-none');
+        showLoading(false);
+      }
+    }
+
+    function checkIfLoggedIn() {
+      return new Promise((resolve, reject) => {
+        // Listen for changes in the user's authentication state
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            // The user is logged in
+            resolve(true);
+          } else {
+            // The user is logged out
+            resolve(false);
+          }
+        });
+      });
+    }
+
+    function goTo(url) {
+      window.location.href = url;
+    }
+
+    function handleLogout() {
+      $('#logoutBtn').click(function() {
+        logout();
+      });
+    }
+
+    function logout() {
+      // Sign out the current user
+      auth.signOut()
+      .then(() => {
+        goTo('index.html');
+      })
+      .catch((error) => {
+          // Handle sign-out errors
+        console.log('Error signing out:', error);
+      });
+    }
+
+    function showLoading(show) {
+      if (show) {
+        $('#loadingIcon').removeClass('d-none');
+      } else {
+        $('#loadingIcon').addClass('d-none');
+      }
+    }
+
+    $(document).ready(function() {
+      handleRoute();
+
+      handleLogin();
+      handleLogout();
+
+    });
+  </script>
+</body>
 </html>
