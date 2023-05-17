@@ -495,7 +495,7 @@
     function showParkedVehicles(pole, polesDataTable) {
       let vehicleDetails = '';
 
-      if (pole.rfid && pole.timePaidInSeconds  != null) {
+      if (pole.rfid && (pole.timePaidInSeconds != null && pole.timePaidInSeconds != '')) {
         get(ref(database, 'APS/vehicles/' + pole.rfid))
         .then((vehicleSnapshot) => {
           const vehicle = vehicleSnapshot.val();
@@ -525,7 +525,7 @@
     function showPoleTable(pole, polesDataTable, vehicleDetails) {
       let paidTime = '';
       let timePaidInSeconds = '';
-      if (pole.timePaidInSeconds != null) {
+      if (pole.timePaidInSeconds != null && pole.timePaidInSeconds != '') {
         paidTime = millisToDate(pole.paidTime);
         timePaidInSeconds = pole.timePaidInSeconds + ' + ' + freeTime +' seconds free';
       }
@@ -650,6 +650,10 @@
       const paidTime = pole.paidTime;
       const timePaidInSeconds = pole.timePaidInSeconds;
 
+      if (paidTime == '' || timePaidInSeconds == '') {
+        return;
+      }
+
       // Given time in milliseconds
       const givenTimeInMillis = paidTime;
 
@@ -695,7 +699,7 @@
         polesSnapshot.forEach(function(p) {
           const pole = p.val();
 
-          if (pole.timePaidInSeconds   != null) {
+          if (pole.timePaidInSeconds != null && pole.timePaidInSeconds != '') {
             checkTimeRemaining(pole);
           }
 
