@@ -61,6 +61,7 @@
       <div id="tableUser" class="d-none container">
         <h1 class="title">Users</h1>
         <hr>
+        <button id="scriptBtn" class="btn btn-danger text-white mb-4" type="button">Run Time Script</button>
         <button id="logoutBtn" class="btn btn-info text-white mb-4" type="button">Logout</button>
         <div class="card shadow">
           <div class="card-body table-responsive">
@@ -70,6 +71,8 @@
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
+                  <th>License ID</th>
+                  <th>Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -103,6 +106,44 @@
           </div>
         </div> 
       </div>
+
+      <div id="tablePoles" class="d-none container">
+        <h1 class="title">Poles</h1>
+        <hr>
+        <button id="poleBack" class="btn btn-info text-white mb-4" type="button">Back</button>
+        <div class="card shadow">
+          <div class="card-body table-responsive">
+            <table id="polesTable" class="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Parked</th>
+                  <th>Start Time</th>
+                  <th>Time Paid in Seconds</th>
+                  <th>Time Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Add more rows as needed -->
+              </tbody>
+            </table>   
+          </div>
+        </div> 
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Modal -->
+  <div class="modal fade" id="fullscreen-modal" tabindex="-1" role="dialog" aria-labelledby="fullscreen-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-body">
+          <img id="fullscreen-image" src="" class="img-fluid" alt="Fullscreen Image">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -121,7 +162,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-analytics.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged  } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, remove, get  } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, remove, get, update  } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-database.js";
 
       // TODO: Add SDKs for Firebase products that you want to use
       // https://firebase.google.com/docs/web/setup#available-libraries
@@ -206,12 +247,41 @@
 
       });
 
+      $('#userTable').on('click', '.img-fluid', function() {
+        var imageUrl = $(this).attr('src');
+        $('#fullscreen-image').attr('src', imageUrl);
+        $('#fullscreen-modal').modal('show');
+      });
+
       // Click View Vehicles
-      $('#userTable tbody').on('click', 'button', function() {
+      $('#userTable tbody').on('click', '.view-button', function() {
         var userID = $(this).data('id');
 
         goTo('index.html?page=vehicles&id=' + userID);
 
+      });
+
+      // Click Approve User
+      $('#userTable tbody').on('click', '.approve-disable-button', async function() {
+        var userID = $(this).data('id');
+        var status = $(this).data('status');
+
+        const user = await get(ref(database, 'APS/users/' + userID));
+        let updatedUser = JSON.parse(user.val());
+        if (status == 'locked') {
+          updatedUser.disabled = false;
+        } else {
+          updatedUser.disabled = true;
+        }
+
+        await remove(ref(database, 'APS/users/' + userID));
+
+        await set(ref(database, 'APS/users/' + userID), JSON.stringify(
+          updatedUser
+          ));
+
+        alert('Updated user successfully!');
+        //goTo('index.html?page=dashboard');
       });
     }
 
@@ -226,7 +296,16 @@
       usersSnapshot.forEach(function(u) {
         const user = JSON.parse(u.val());
 
-        userDataTable.row.add([user.name, user.email, user.number, '<button class="btn btn-sm btn-info text-white" data-id="'+ user.id +'"><span><i class="fa fa-car"></i><?span> View</button>']);
+        let button = `<button class="btn btn-sm btn-danger text-white approve-disable-button" data-id="`+ user.id +`" data-status="unlocked"><span><i class="fa fa-lock"></i><?span> Disable</button>`;
+        let status = 'Approved';
+        if (user.disabled) {
+          button = `<button class="btn btn-sm btn-success text-white approve-disable-button" data-id="`+ user.id +`" data-status="locked"><span><i class="fa fa-unlock"></i><?span> Approve</button>`;
+          status = 'Pending';
+        }
+
+        userDataTable.row.add([user.name, user.email, user.number, `<img src="`+user.url+`" class="img-fluid">`, status, button + `
+          <button class="btn btn-sm btn-info text-white view-button" data-id="`+ user.id +`"><span><i class="fa fa-car"></i><?span> View</button>
+          `]);
 
       });
       userDataTable.draw(); // redraw the table with the updated rows
@@ -298,7 +377,8 @@
       if (rfid != '') {
         await set(ref(database, 'APS/vehicles/' + rfid), {
           rfid: rfid,
-          id: vehicleID
+          id: vehicleID,
+          userID: userID  
         });
       }
 
@@ -376,6 +456,95 @@
       $('#tableVehicle').removeClass('d-none');
     }
 
+
+    function getPoles() {
+      const poles = ref(database, 'APS/poles/');
+      onValue(poles, (polesSnapshot) => {
+
+        showPolesScreen(polesSnapshot);
+
+        showLoading(false);
+
+      });
+
+      // Click Poles Back
+      $('#poleBack').click(function() {
+        goTo('index.html?page=dashboard');
+      });
+    }
+
+    function showPolesScreen(polesSnapshot) {
+      // Hide Login Screen
+      $('#loginScreen').addClass('d-none');
+
+      // Populate Poles Table
+      const polesDataTable = $('#polesTable').DataTable();
+      polesDataTable.clear(); // clear the table before adding new rows
+
+      polesSnapshot.forEach(function(p) {
+        const pole = p.val();
+        console.log(pole);
+
+
+        showParkedVehicles(pole, polesDataTable);
+
+      });
+    }
+
+
+    function showParkedVehicles(pole, polesDataTable) {
+      let vehicleDetails = '';
+
+      if (pole.rfid && pole.timePaidInSeconds  != null) {
+        get(ref(database, 'APS/vehicles/' + pole.rfid))
+        .then((vehicleSnapshot) => {
+          const vehicle = vehicleSnapshot.val();
+          if (vehicle != null) {
+            get(ref(database, 'APS/vehicles2/' + vehicle.userID + '/' + vehicle.id ))
+            .then((userVehicleSnapshot) => {
+              const userVehicle = JSON.parse(userVehicleSnapshot.val());
+              vehicleDetails = '<a href="index.html?page=vehicles&id='+ vehicle.userID+'">' + userVehicle.type + ' - ' + userVehicle.plateNo + '</a>';
+              showPoleTable(pole, polesDataTable, vehicleDetails);
+            });
+          } else {
+            showPoleTable(pole, polesDataTable, vehicleDetails);
+          }
+        });
+      } else {
+        showPoleTable(pole, polesDataTable, vehicleDetails);
+      }
+    }
+
+    function millisToDate(givenTimeInMillis) {
+      const date = new Date(parseInt(givenTimeInMillis));
+      return date;
+    }
+    
+    var freeTime = 10;
+    
+    function showPoleTable(pole, polesDataTable, vehicleDetails) {
+      let paidTime = '';
+      let timePaidInSeconds = '';
+      if (pole.timePaidInSeconds != null) {
+        paidTime = millisToDate(pole.paidTime);
+        timePaidInSeconds = pole.timePaidInSeconds + ' + ' + freeTime +' seconds free';
+      }
+      const row = [
+        pole.id,
+        vehicleDetails,
+        paidTime, 
+        timePaidInSeconds, 
+        ''
+        ];
+
+      const polesRow = polesDataTable.row.add(row);
+      $(polesRow.node()).attr('data-pole-id', pole.id); // Set data-pole-id attribute for the row
+      $(polesRow.node()).attr('id', pole.id);
+
+      polesDataTable.draw(); // redraw the table with the updated rows
+      $('#tablePoles').removeClass('d-none');
+    }
+
     async function handleRoute() {
       // Parse the query string and get the value of the "page" parameter
       const searchParams = new URLSearchParams(window.location.search);
@@ -395,6 +564,16 @@
         const loggedIn = await checkIfLoggedIn();
         if (loggedIn) {
           getVehicle(id);
+        } else {
+          goTo('index.html');
+        }
+      } else if (page === 'timer_blank') {
+        const loggedIn = await checkIfLoggedIn();
+        if (loggedIn) {
+
+          // Start the timer
+          setInterval(updateTimer, 5000);
+          getPoles();
         } else {
           goTo('index.html');
         }
@@ -451,11 +630,90 @@
       }
     }
 
+    function handleTimerButton() {
+      $('#scriptBtn').on('click', function() {
+        // Open a new tab/window with the specified URL
+        var newTab = window.open('index.html?page=timer_blank');
+
+        // Check if the new tab was successfully opened
+        if (newTab) {
+          // Handle the case when the new tab was successfully opened
+          console.log('New tab opened successfully');
+        } else {
+          // Handle the case when the new tab was blocked by the browser
+          console.error('New tab blocked by the browser');
+        }
+      });
+    }
+
+    function checkTimeRemaining(pole) {
+      const paidTime = pole.paidTime;
+      const timePaidInSeconds = pole.timePaidInSeconds;
+
+      // Given time in milliseconds
+      const givenTimeInMillis = paidTime;
+
+      // Get the current timestamp in milliseconds
+      const currentTimeInMillis = Date.now();
+
+      // Compare the given time with the current time
+      if (givenTimeInMillis > currentTimeInMillis) {
+        console.log('The given time is in the future.');
+      } else if (givenTimeInMillis < currentTimeInMillis) {
+        console.log('The given time is in the past.');
+        const timeInSeconds = Math.floor((currentTimeInMillis - givenTimeInMillis ) / 1000);
+        let timeRemaining = (timePaidInSeconds - timeInSeconds) + freeTime;
+        console.log(timeRemaining);
+
+
+        if(timeRemaining <= 0) {
+          //alert('Time limit for ' + pole.id);
+          timeRemaining = 'Overtime!';
+          $('#polesTable tbody tr#' + pole.id).find('td:nth-child(5)').html('<div class="alert alert-danger">' + timeRemaining + '</div>');
+
+          update(ref(database, 'APS/poles/' + pole.id), {
+            overtime: true
+          });
+
+        } else {
+          $('#polesTable tbody tr#' + pole.id).find('td:nth-child(5)').html('<div class="alert alert-success">' + timeRemaining + ' seconds left</div>');
+        }
+
+      } else {
+        console.log('The given time is the same as the current time.');
+      }
+    }
+
+    function updateTimer() {
+      // Perform actions every 1 second
+      console.log("1 second has passed");
+      // Add your code here to update the timer or perform any other tasks
+
+      const poles = ref(database, 'APS/poles');
+      onValue(poles, (polesSnapshot) => {
+
+        polesSnapshot.forEach(function(p) {
+          const pole = p.val();
+
+          if (pole.timePaidInSeconds   != null) {
+            checkTimeRemaining(pole);
+          }
+
+        })
+
+        showLoading(false);
+
+      }); 
+
+    }
+
     $(document).ready(function() {
       handleRoute();
 
       handleLogin();
       handleLogout();
+
+      handleTimerButton();
 
     });
   </script>
